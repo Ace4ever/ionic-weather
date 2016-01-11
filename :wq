@@ -1,0 +1,9 @@
+# Switch node-version when directory changes
+# https://github.com/creationix/nvm/issues/603#issuecomment-91290448
+function chpwd() {
+  if [ -r $PWD/.node-version ]; then
+    nvm use `cat $PWD/.node-version`
+  fi
+}
+chpwd
+
