@@ -22,3 +22,48 @@ angular.module('starter', ['ionic'])
     }
   });
 })
+
+.controller('weatherCtrl', function ($http) {
+  var weather = this;
+
+  var base = 'http://api.wunderground.com/api/'
+  var apikey = '31ca6a35844b0662';
+  var url = base + apikey + '/conditions/q/';
+
+  $http.get(url + 'autoip.json')
+  .then(parseWUData);
+
+  navigator.geolocation.getCurrentPosition(function (geopos) {
+    var lat = geopos.coords.latitude;
+    var long = geopos.coords.longitude;
+
+    $http
+      .get(url + lat + ',' + long + '.json')
+      .then(parseWUData);
+  });
+
+  weather.temp = '';
+
+  weather.search = function () {
+    $http.get(url + weather.searchQuery + '.json')    
+    .then(parseWUData)
+    .then (function(res){
+      var history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+
+      if(history.indexOf(res.data.current_observation.station_id) === -1) {
+        history.push(res.data.current_observation.station_id);
+        localStorage.setItem('searchHistory', JSON.stringify(history));
+      }
+    });  
+  }
+
+  function parseWUData(res) {
+    var data = res.data.current_observation;
+    weather.location = data.display_location.full;
+    weather.temp = parseInt(data.temp_f);
+    weather.image = data.icon_url;
+
+    return res;
+  }
+
+});
